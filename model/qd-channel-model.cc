@@ -49,6 +49,7 @@ QdChannelModel::QdChannelModel (std::string path, std::string scenario)
 
   SetPath (path);
   SetScenario (scenario);
+  m_blockageValue = 0;
 }
 
 QdChannelModel::~QdChannelModel ()
@@ -521,6 +522,12 @@ QdChannelModel::GetChannel (Ptr<const MobilityModel> aMob,
   return channelMatrix;
 }
 
+void 
+QdChannelModel::SetBlockageValue (double blockageValue)
+{
+  m_blockageValue = blockageValue;
+}
+
 Ptr<const MatrixBasedChannelModel::ChannelMatrix>
 QdChannelModel::GetNewChannel (Ptr<const MobilityModel> aMob,
                                Ptr<const MobilityModel> bMob,
@@ -573,8 +580,11 @@ QdChannelModel::GetNewChannel (Ptr<const MobilityModel> aMob,
 
   for (uint64_t mpcIndex = 0; mpcIndex < qdInfo.numMpcs; ++mpcIndex)
     {
+      /*NS_LOG_UNCOND (qdInfo.pathGain_dbpow[mpcIndex]);
+      NS_LOG_UNCOND (qdInfo.pathGain_dbpow[mpcIndex] - m_blockageValue);
+      NS_LOG_UNCOND ("-----");*/
       double initialPhase = -2 * M_PI * qdInfo.delay_s[mpcIndex] * m_frequency + qdInfo.phase_rad[mpcIndex];
-      double pathGain = pow (10, qdInfo.pathGain_dbpow[mpcIndex] / 20);
+      double pathGain = pow (10, (qdInfo.pathGain_dbpow[mpcIndex] - m_blockageValue) / 20);
       
       Angles bAngle = Angles (qdInfo.azAoa_rad[mpcIndex], qdInfo.elAoa_rad[mpcIndex]);
       Angles aAngle = Angles (qdInfo.azAod_rad[mpcIndex], qdInfo.elAod_rad[mpcIndex]);

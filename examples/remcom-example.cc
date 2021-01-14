@@ -43,6 +43,7 @@ using namespace ns3;
 double txPow = 30.0; // Tx power in dBm
 double noiseFigure = 9.0; // Noise figure in dB
 uint32_t timeRes = 20; // Time resolution in milliseconds
+double blockageValue = 60.0; // Blockage value [dB]
 
 // main variables
 Ptr<QdChannelModel> qdChannel;
@@ -51,6 +52,13 @@ Ptr<MobilityModel> rxMob;
 Ptr<ThreeGppAntennaArrayModel> txAntenna;
 Ptr<ThreeGppAntennaArrayModel> rxAntenna;
 Ptr<ThreeGppSpectrumPropagationLossModel> spectrumLossModel;
+
+static void 
+ModifyBlockageValue (double blockage)
+{
+  qdChannel->SetBlockageValue (blockage);
+  Simulator::Schedule (Seconds (5), &ModifyBlockageValue, 0.0);
+}
 
 /**
  * Perform the beamforming using the SVD beamforming method
@@ -104,6 +112,8 @@ main (int argc, char *argv[])
 
   // Create the QdChannelModel
   qdChannel = CreateObject<QdChannelModel> (qdFilesPath, scenario);
+   // Schedule blockage
+  Simulator::Schedule (Seconds (10), &ModifyBlockageValue, blockageValue);
   Time simTime = qdChannel->GetQdSimTime ();
   
   // Create the spectrum propagation loss model

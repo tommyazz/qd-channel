@@ -60,6 +60,8 @@ public:
    */
   static TypeId GetTypeId ();
 
+  void SetBlockageValue (double blockageValue);
+
   /**
    * Returns a matrix with a realization of the channel between
    * the nodes with mobility objects passed as input parameters.
@@ -231,6 +233,7 @@ private:
 
   std::string m_path; //!< folder path containing the scenario of interest
   std::string m_scenario; //!< scenario folder name, containg the Input/ and the Output/Ns3/ folders
+  double m_blockageValue;
 };
 
 } // namespace ns3

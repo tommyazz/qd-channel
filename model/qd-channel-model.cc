@@ -282,7 +282,12 @@ QdChannelModel::ReadQdFiles (QdChannelModel::RtIdToNs3IdMap_t rtIdToNs3IdMap)
                                ") and number of MPCs (" << qdInfo.numMpcs <<
                                "), timestep=" << qdInfoVector.size () + 1 <<
                                ", fileName=" << fileName);
+              for (uint32_t i = 0; i < pathDelays.size(); ++i)
+              {
+                pathDelays.at(i) = pathDelays.at(i)/1e9;
+              }
               qdInfo.delay_s = pathDelays;
+
               // a line with the path gains
               std::getline (qdFile, line);
               auto pathGains = ParseCsv (line);
@@ -585,17 +590,23 @@ QdChannelModel::GetNewChannel (Ptr<const MobilityModel> aMob,
       NS_LOG_UNCOND ("-----");*/
       double initialPhase = -2 * M_PI * qdInfo.delay_s[mpcIndex] * m_frequency + qdInfo.phase_rad[mpcIndex];
       double pathGain = pow (10, (qdInfo.pathGain_dbpow[mpcIndex] - m_blockageValue) / 20);
-      
-      Angles bAngle = Angles (qdInfo.azAoa_rad[mpcIndex], qdInfo.elAoa_rad[mpcIndex]);
-      Angles aAngle = Angles (qdInfo.azAod_rad[mpcIndex], qdInfo.elAod_rad[mpcIndex]);
+      NS_LOG_DEBUG (initialPhase);
+      Angles bAngle = Angles (qdInfo.azAoa_rad[mpcIndex], qdInfo.elAoa_rad[mpcIndex]+M_PI/2);
+      Angles aAngle = Angles (qdInfo.azAod_rad[mpcIndex], qdInfo.elAod_rad[mpcIndex]+M_PI/2);
       NS_LOG_DEBUG ("aAngle: " << aAngle << ", bAngle: " << bAngle);
+
+      //Angles newAangle = Angles (aAngle.theta, -aAngle.phi);
+      //Angles newBangle = Angles (bAngle.theta, -bAngle.phi);
       
       // ignore polarization
-      double bFieldPattH, bFieldPattV, aFieldPattH, aFieldPattV;
+      /*double bFieldPattH, bFieldPattV, aFieldPattH, aFieldPattV;
       std::tie (bFieldPattH, bFieldPattV) = bAntenna->GetElementFieldPattern (bAngle);
       double bElementGain = std::sqrt (bFieldPattH * bFieldPattH + bFieldPattV * bFieldPattV);
       std::tie (aFieldPattH, aFieldPattV) = aAntenna->GetElementFieldPattern (aAngle);
-      double aElementGain = std::sqrt (aFieldPattH * aFieldPattH + aFieldPattV * aFieldPattV);
+      double aElementGain = std::sqrt (aFieldPattH * aFieldPattH + aFieldPattV * aFieldPattV);*/
+
+      double aElementGain = 1.0;
+      double bElementGain = 1.0;
       
       double pgTimesGains = pathGain * bElementGain * aElementGain;
       std::complex<double> complexRay = pgTimesGains * std::polar (1.0, initialPhase);
